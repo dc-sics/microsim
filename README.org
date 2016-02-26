@@ -1,0 +1,41 @@
+
+
+
+** Meeting 2016-02-04
+ + Action: review Java splittable random number generators. How do they relate to our default? [CM]
+ + Action: review random number generators for Spark. [CM]
+ + Action: paragraphs for the introduction on HPC and X10 (http://x10-lang.org/).  [CM]
+ + Action: get the reporting going. 
+
+** Meeting 2016-02-26
+ + Action: repositories on [[[[https://github.com/dc-sics]]][GitHub]]. 
+ + Action: github.com README.md [CM]
+ + Action: reading list on microsimulation and related software [MC]
+ + Writing: broader use cases? [CM]
+ + Writing: other Java DES packages? [MC]
+ + Action: Plots!! [CM]
+
+*** Reporting formats: 
+For comparison with the Cancer Registry:
+ + CancerIncidenceRate = (# new cancers)/(total person-time)
+ + CancerMortalityRate = (# cancer deaths)/(total person-time)
+
+
+
+** Outline
+
+*** Introduction
+
+ + Microsimulation
+ + How to scale out?
+ + Hadoop + Spark as one approach
+ + Related code
+
+*** Methods
+ + SSJ library
+ + Spark
+ + Common random numbers: SSJ vs Splittable
+ + Framework?
+ + Example simulation: prostate cancer screening
+ + How to evaluate ease of use?
+ + How to evaluate performance?
