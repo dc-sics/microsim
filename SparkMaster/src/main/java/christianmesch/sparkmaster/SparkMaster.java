@@ -14,6 +14,7 @@ import christianmesch.simulationworker.misc.EventKeyFilter;
 import christianmesch.simulationworker.misc.PTKeyFilter;
 import christianmesch.simulationworker.misc.Report;
 import christianmesch.simulationworker.models.States;
+import christianmesch.sparkmaster.misc.ChartCreator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +102,8 @@ public class SparkMaster {
 		filteredEvents.printEvents();
 		filteredPTs.printPersonTimes();
 		*/
+		
+		ChartCreator.incidenceChart(allReports, "Title", "X-Label", "Y-Label", "Cancer", 800, 600, "Cancer");
 		
 		allReports.report();
 

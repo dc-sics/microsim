@@ -42,6 +42,14 @@ public class Report implements Serializable {
 		events = other.events;
 		personTimes = other.personTimes;
 	}
+
+	public Map<EventKey, Integer> getEvents() {
+		return events;
+	}
+
+	public Map<PTKey, Double> getPersonTimes() {
+		return personTimes;
+	}
 	
 	/**
 	 * Log the event
