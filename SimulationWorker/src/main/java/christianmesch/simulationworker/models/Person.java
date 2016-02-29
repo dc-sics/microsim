@@ -7,6 +7,8 @@ package christianmesch.simulationworker.models;
 
 import umontreal.ssj.simevents.Simulator;
 
+
+
 /**
  * Object with all relevant information about the person in the replication.
  * @author Christian Mesch

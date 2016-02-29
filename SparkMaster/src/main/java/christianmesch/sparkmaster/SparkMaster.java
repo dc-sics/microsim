@@ -20,8 +20,8 @@ import java.util.Map;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import umontreal.iro.lecuyer.rng.MRG32k3a;
-import umontreal.iro.lecuyer.rng.RandomStreamBase;
+import umontreal.ssj.rng.MRG32k3a;
+import umontreal.ssj.rng.RandomStreamBase;
 
 /**
  * The driver class.<br><br>
@@ -44,14 +44,20 @@ public class SparkMaster {
 
 	/**
 	 * @param args the command line arguments
+	 * @throws java.lang.Exception
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// Constants for number of workers and replications per worker
 		// NUM_WORKERS * REPLICATIONS_PER_WORKER = Full # of replications
-		final int NUM_WORKERS = 10;
-		final int REPLICATIONS_PER_WORKER = 100;
+		int NUM_WORKERS = 10;
+		int REPLICATIONS_PER_WORKER = 100;
+		
+		if(args.length == 2) {
+			NUM_WORKERS = Integer.valueOf(args[0]);
+			REPLICATIONS_PER_WORKER = Integer.valueOf(args[1]);
+		}
 
-		SparkConf config = new SparkConf().setAppName("Test");
+		SparkConf config = new SparkConf().setAppName("Testing");
 		JavaSparkContext context = new JavaSparkContext(config);
 
 		// Add Streams to a map with the name you want to use to access them as key
@@ -61,14 +67,19 @@ public class SparkMaster {
 		randomStreams.put("CancerDeath", new MRG32k3a());
 
 		// Create list with commands for workers
-		List<List<String>> commandList = Utils.generateCommandList(randomStreams,
+		List<Map<String, RandomStreamBase>> commandList = Utils.inflateStreams(randomStreams,
 				NUM_WORKERS, REPLICATIONS_PER_WORKER);
-
-		JavaRDD<List<String>> dataSet = context.parallelize(commandList);
+		
+		
+		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(commandList);
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
-		JavaRDD<Report> reports = dataSet.map(new SimulationFunction()).cache();
+		JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
+		
+		Report allReports = reports.reduce(new CollectFunction());
+		
+		/* Comment everything to do with filter for now
 		
 		// Create a filter to filter the events
 		States eventsStates = new States(States.HealthState.LOCOREGIONAL, States.Diagnosis.NONE);
@@ -89,7 +100,9 @@ public class SparkMaster {
 		// Print the filtered reports
 		filteredEvents.printEvents();
 		filteredPTs.printPersonTimes();
-		//report.report();
+		*/
+		
+		allReports.report();
 
 		context.stop();
 	}

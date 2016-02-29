@@ -6,11 +6,12 @@
 package christianmesch.sparkmaster.misc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import umontreal.iro.lecuyer.rng.MRG32k3a;
-import umontreal.iro.lecuyer.rng.RandomStreamBase;
+import umontreal.ssj.rng.MRG32k3a;
+import umontreal.ssj.rng.RandomStreamBase;
 
 /**
  *
@@ -55,5 +56,23 @@ public class Utils {
 		}
 		
 		return commandList;
+	}
+	
+	public static List<Map<String, RandomStreamBase>> inflateStreams(Map<String, RandomStreamBase> randomStreams, final int NUM_WORKERS, final int REPLICATIONS_PER_WORKER) throws Exception {
+		List<Map<String, RandomStreamBase>> streamList = new ArrayList<>(NUM_WORKERS);
+		
+		for(int i = 0; i < NUM_WORKERS; i++) {
+			Map<String, RandomStreamBase> streams = new HashMap<>();
+			
+			for(Entry<String, RandomStreamBase> entry : randomStreams.entrySet()) {
+				RandomStreamBase stream = (RandomStreamBase) Class.forName(entry.getValue().getClass().getName())
+						.getConstructor().newInstance();
+				streams.put(entry.getKey(), stream);
+			}
+			
+			streamList.add(streams);
+		}
+		
+		return streamList;
 	}
 }

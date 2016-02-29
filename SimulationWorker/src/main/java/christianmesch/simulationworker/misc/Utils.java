@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import umontreal.ssj.rng.RandomStreamBase;
-import umontreal.ssj.simevents.Event;
 import umontreal.ssj.simevents.Simulator;
+import umontreal.ssj.simevents.Event;
 import umontreal.ssj.util.Num;
+
 
 /**
  * A static utility class.

@@ -72,6 +72,8 @@ public class MySimulator {
 		for (int i = 0; i < REPLICATIONS; i++) {
 			init();
 			simulator.start();
+			
+			container.resetNextSubstreams();
 		}
 		
 		return container.getReport();

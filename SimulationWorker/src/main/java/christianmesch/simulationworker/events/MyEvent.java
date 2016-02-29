@@ -9,6 +9,7 @@ import christianmesch.simulationworker.misc.Container;
 import umontreal.ssj.simevents.Event;
 import umontreal.ssj.simevents.Simulator;
 
+
 /**
  * Abstract event class with added functionality.
  * This class should be extended by every event.

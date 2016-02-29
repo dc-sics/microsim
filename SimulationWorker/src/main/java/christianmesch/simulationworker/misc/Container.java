@@ -44,5 +44,10 @@ public class Container {
 		person = person.reset();
 	}
 	
+	public void resetNextSubstreams() {
+		for(RandomStreamBase stream : randomStreams.values()) {
+			stream.resetNextSubstream();
+		}
+	}
 	
 }
