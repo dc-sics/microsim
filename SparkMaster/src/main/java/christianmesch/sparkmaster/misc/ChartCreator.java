@@ -7,9 +7,7 @@ package christianmesch.sparkmaster.misc;
 
 import christianmesch.simulationworker.misc.EventKey;
 import christianmesch.simulationworker.misc.PTKey;
-import christianmesch.simulationworker.misc.PTKeyFilter;
 import christianmesch.simulationworker.misc.Report;
-import christianmesch.simulationworker.models.States;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,7 +26,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 public class ChartCreator {
 	
 	/**
-	 * Method for creating incidence charts. <br><br>
+	 * Method for creating rate charts. <br><br>
 	 * 
 	 * Right now it's only using one line. Can be fixed if needed.<br>
 	 * The saving to working directory will change as well.
@@ -40,10 +38,10 @@ public class ChartCreator {
 	 * @param lineName Name of the line in the chart
 	 * @param width Width of the chart in px
 	 * @param height Height of the chart in px
-	 * @param events One or more events to create the incidence chart on
+	 * @param events One or more events to create the rate chart on
 	 * @throws IOException 
 	 */
-	public static void incidenceChart(Report report, String title, String xLabel,
+	public static void rateChart(Report report, String title, String xLabel,
 			String yLabel, String lineName, int width, int height, String... events) throws IOException {
 		
 		DefaultCategoryDataset dataSet = new DefaultCategoryDataset();

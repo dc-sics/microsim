@@ -103,7 +103,7 @@ public class SparkMaster {
 		filteredPTs.printPersonTimes();
 		*/
 		
-		ChartCreator.incidenceChart(allReports, "Title", "X-Label", "Y-Label", "Cancer", 800, 600, "Cancer");
+		ChartCreator.rateChart(allReports, "Title", "X-Label", "Y-Label", "Cancer", 800, 600, "Cancer");
 		
 		allReports.report();
 
