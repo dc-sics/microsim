@@ -103,7 +103,17 @@ public class SparkMaster {
 		filteredPTs.printPersonTimes();
 		*/
 		
-		ChartCreator.rateChart(allReports, "Title", "X-Label", "Y-Label", "Cancer", 800, 600, "Cancer");
+		ChartCreator chart = new ChartCreator(allReports)
+				.setTitle("Title")
+				.setxLabel("X-Label")
+				.setyLabel("Y-Label")
+				.setLineName("Line name")
+				.setHeight(600)
+				.setWidth(800)
+				.setStepSize(5)
+				.setEvents("Cancer");
+		
+		chart.createRateChart();
 		
 		allReports.report();
 
