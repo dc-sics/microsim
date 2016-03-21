@@ -67,12 +67,12 @@ public class SparkMaster {
 		randomStreams.put("Death", new MRG32k3a());
 		randomStreams.put("CancerDeath", new MRG32k3a());
 
-		// Create list with commands for workers
-		List<Map<String, RandomStreamBase>> commandList = Utils.inflateStreams(randomStreams,
+		// Create list containing maps of randomstreams for each worker
+		List<Map<String, RandomStreamBase>> streamList = Utils.inflateStreams(randomStreams,
 				NUM_WORKERS, REPLICATIONS_PER_WORKER);
 		
 		
-		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(commandList);
+		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(streamList);
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
