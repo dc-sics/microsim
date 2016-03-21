@@ -43,6 +43,7 @@ public class ChartCreator {
 	private int width;
 	private int height;
 	private int stepSize;
+	private int multiplier;
 	private String[] events;
 	
 	public ChartCreator(Report report) {
@@ -52,6 +53,7 @@ public class ChartCreator {
 		this.width = 800;
 		this.height = 600;
 		this.stepSize = 1;
+		this.multiplier = 1;
 	}
 	
 	/**
@@ -138,6 +140,17 @@ public class ChartCreator {
 	}
 
 	/**
+	 * Set the integer to multiply the y-values with.
+	 * For example: setMultiplier(100000) if you want to have rate by 100000 persons
+	 * @param multiple
+	 * @return 
+	 */
+	public ChartCreator setMultiplier(int multiple) {
+		this.multiplier = multiple;
+		return this;
+	}
+	
+	/**
 	 * Name of the events you want to create the chart from
 	 * @param events
 	 * @return this
@@ -156,7 +169,6 @@ public class ChartCreator {
 	 * @throws IOException 
 	 */
 	public void createRateChart() throws IOException {
-		
 		Map<Double, Double> totalPTs = totalPersonTimes();
 		Map<Double, Integer> totalEvents = totalEvents();
 		
@@ -164,7 +176,7 @@ public class ChartCreator {
 		
 		// Add all points to the data set
 		for(Entry<Double, Integer> entry : totalEvents.entrySet()) {
-			Double value = entry.getValue() / totalPTs.get(entry.getKey());
+			Double value = entry.getValue() * multiplier / totalPTs.get(entry.getKey());
 			
 			series.add(entry.getKey(), value);
 		}
@@ -227,7 +239,7 @@ public class ChartCreator {
 				}
 			}
 			
-		}
+		} // select age, sum(events) as events, sum(pt) as pt from events where eventType in ("cancer") group by 1;
 		
 		return totalEvents;
 	}
