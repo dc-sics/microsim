@@ -5,6 +5,7 @@
  */
 package christianmesch.sparkmaster;
 
+import christianmesch.simulationworker.misc.EventKey;
 import christianmesch.sparkmaster.functions.CollectFunction;
 import christianmesch.sparkmaster.functions.FilterEventsFunction;
 import christianmesch.sparkmaster.functions.FilterPTsFunction;
@@ -14,13 +15,16 @@ import christianmesch.simulationworker.misc.EventKeyFilter;
 import christianmesch.simulationworker.misc.PTKeyFilter;
 import christianmesch.simulationworker.misc.Report;
 import christianmesch.simulationworker.models.States;
+import christianmesch.sparkmaster.functions.PairSimulationFunction;
 import christianmesch.sparkmaster.misc.ChartCreator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import scala.Tuple2;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStreamBase;
 
@@ -76,9 +80,20 @@ public class SparkMaster {
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
-		JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
+		//JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
 		
-		Report allReports = reports.reduce(new CollectFunction());
+		JavaPairRDD<EventKey, Integer> events = dataSet.flatMapToPair(new PairSimulationFunction(REPLICATIONS_PER_WORKER));
+		
+		JavaPairRDD<EventKey, Integer> reducedEvents = events.reduceByKey((Integer v1, Integer v2) -> {
+			return v1 + v2;
+		});
+		
+		for(Tuple2<EventKey, Integer> tuple : reducedEvents.sortByKey().collect()) {
+			System.out.println(tuple._1 + " = " + tuple._2);
+		}
+		
+		
+		//Report allReports = reports.reduce(new CollectFunction());
 		
 		/* Comment everything to do with filter for now
 		
@@ -102,7 +117,7 @@ public class SparkMaster {
 		filteredEvents.printEvents();
 		filteredPTs.printPersonTimes();
 		*/
-		
+	/*	
 		ChartCreator chart = new ChartCreator(allReports)
 				.setTitle("Title")
 				.setxLabel("Age (years)")
@@ -117,7 +132,7 @@ public class SparkMaster {
 		chart.createRateChart();
 		
 		allReports.report();
-
+*/
 		context.stop();
 	}
 
