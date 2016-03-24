@@ -51,7 +51,7 @@ public class SparkMaster {
 		// Constants for number of workers and replications per worker
 		// NUM_WORKERS * REPLICATIONS_PER_WORKER = Full # of replications
 		int NUM_WORKERS = 10;
-		int REPLICATIONS_PER_WORKER = 100;
+		int REPLICATIONS_PER_WORKER = 100000;
 		
 		if(args.length == 2) {
 			NUM_WORKERS = Integer.valueOf(args[0]);
@@ -67,12 +67,12 @@ public class SparkMaster {
 		randomStreams.put("Death", new MRG32k3a());
 		randomStreams.put("CancerDeath", new MRG32k3a());
 
-		// Create list with commands for workers
-		List<Map<String, RandomStreamBase>> commandList = Utils.inflateStreams(randomStreams,
+		// Create list containing maps of randomstreams for each worker
+		List<Map<String, RandomStreamBase>> streamList = Utils.inflateStreams(randomStreams,
 				NUM_WORKERS, REPLICATIONS_PER_WORKER);
 		
 		
-		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(commandList);
+		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(streamList);
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
@@ -105,12 +105,13 @@ public class SparkMaster {
 		
 		ChartCreator chart = new ChartCreator(allReports)
 				.setTitle("Title")
-				.setxLabel("X-Label")
-				.setyLabel("Y-Label")
+				.setxLabel("Age (years)")
+				.setyLabel("Incidence rate per 100,000")
 				.setLineName("Line name")
 				.setHeight(600)
 				.setWidth(800)
 				.setStepSize(5)
+				.setMultiplier(100000)
 				.setEvents("Cancer");
 		
 		chart.createRateChart();

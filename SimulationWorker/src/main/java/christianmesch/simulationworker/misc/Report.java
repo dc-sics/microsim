@@ -60,7 +60,7 @@ public class Report implements Serializable {
 	public void logEvent(Person person, String event, double age) {
 		EventKey key = new EventKey(person.copyStates(), event, Math.floor(age));
 		
-		events.put(key, events.containsKey(key) ? events.get(key) + 1 : 1);
+		events.put(key, events.getOrDefault(key, 0) + 1);
 	}
 	
 	/**
@@ -70,7 +70,7 @@ public class Report implements Serializable {
 	 * @param value Value which should be added to the key
 	 */
 	private void addEvent(EventKey key, Integer value) {
-		events.put(key, events.containsKey(key) ? events.get(key) + value : value);
+		events.put(key, events.getOrDefault(key, 0) + value);
 	}
 	
 	/**
@@ -100,7 +100,7 @@ public class Report implements Serializable {
 	 * @param value Value which should be added to the key
 	 */
 	private void addPersonTime(PTKey key, double value) {
-		double newValue = (personTimes.containsKey(key) ? personTimes.get(key) : 0.0) + value;
+		double newValue = personTimes.getOrDefault(key, 0.0) + value;
 		
 		personTimes.put(key, newValue);
 	}
