@@ -11,19 +11,24 @@ import christianmesch.sparkmaster.functions.FilterEventsFunction;
 import christianmesch.sparkmaster.functions.FilterPTsFunction;
 import christianmesch.sparkmaster.functions.SimulationFunction;
 import christianmesch.sparkmaster.misc.Utils;
+import christianmesch.sparkmaster.schemas.Event;
 import christianmesch.simulationworker.misc.EventKeyFilter;
 import christianmesch.simulationworker.misc.PTKeyFilter;
 import christianmesch.simulationworker.misc.Report;
-import christianmesch.simulationworker.models.States;
 import christianmesch.sparkmaster.functions.PairSimulationFunction;
 import christianmesch.sparkmaster.misc.ChartCreator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.SQLContext;
 import scala.Tuple2;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStreamBase;
@@ -64,6 +69,7 @@ public class SparkMaster {
 
 		SparkConf config = new SparkConf().setAppName("Testing");
 		JavaSparkContext context = new JavaSparkContext(config);
+		SQLContext sqlContext = new SQLContext(context);
 
 		// Add Streams to a map with the name you want to use to access them as key
 		Map<String, RandomStreamBase> randomStreams = new HashMap<>();
@@ -80,8 +86,37 @@ public class SparkMaster {
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
-		//JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
+		JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
 		
+		JavaRDD<Event> events = reports.flatMap(new FlatMapFunction<Report, Event>() {
+			@Override
+			public Iterable<Event> call(Report t) throws Exception {
+				List<Event> list = new ArrayList<>(t.getEvents().size());
+				for(Entry<EventKey, Integer> entry : t.getEvents().entrySet()) {
+					Event event = new Event();
+					
+					event.setHealthState(entry.getKey().getStates().getHealthState().toString());
+					event.setDiagnosis(entry.getKey().getStates().getDiagnosis().toString());
+					event.setEvent(entry.getKey().getEvent());
+					event.setAge(entry.getKey().getAge());
+					event.setValue(entry.getValue());
+					
+					list.add(event);
+				}
+				
+				return list;
+			}
+		}).cache();
+		
+		DataFrame schemaEvents = sqlContext.createDataFrame(events, Event.class);
+		schemaEvents.registerTempTable("events");
+		
+		
+		DataFrame cancer = sqlContext.sql("SELECT * FROM events WHERE age >= 30");
+		cancer.printSchema();
+		cancer.show();
+		
+		/*
 		JavaPairRDD<EventKey, Integer> events = dataSet.flatMapToPair(new PairSimulationFunction(REPLICATIONS_PER_WORKER));
 		
 		JavaPairRDD<EventKey, Integer> reducedEvents = events.reduceByKey((Integer v1, Integer v2) -> {
@@ -91,7 +126,7 @@ public class SparkMaster {
 		for(Tuple2<EventKey, Integer> tuple : reducedEvents.sortByKey().collect()) {
 			System.out.println(tuple._1 + " = " + tuple._2);
 		}
-		
+		*/
 		
 		//Report allReports = reports.reduce(new CollectFunction());
 		
