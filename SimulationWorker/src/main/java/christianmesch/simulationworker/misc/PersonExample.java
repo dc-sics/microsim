@@ -19,19 +19,19 @@ public class PersonExample {
     MRG32k3a rngOtherDeath = new MRG32k3a();
     MRG32k3a rngCancerDeath = new MRG32k3a();
 
-    public enum ext_grade_t {Gleason_le_6,Gleason_7,Gleason_ge_8}
+    public enum ExtGrade {Gleason_le_6,Gleason_7,Gleason_ge_8}
 
     public enum Stage {Healthy,Localised,Metastatic}
 
     public enum Diagnosis {NotDiagnosed,ClinicalDiagnosis,ScreenDiagnosis}
 
-    public enum screen_t {noScreening, randomScreen50to70, twoYearlyScreen50to70, fourYearlyScreen50to70, screen50, screen60, screen70, screenUptake, stockholm3_goteborg, stockholm3_risk_stratified,goteborg, risk_stratified, mixed_screening,regular_screen, single_screen}
+    public enum ScreenType {noScreening, randomScreen50to70, twoYearlyScreen50to70, fourYearlyScreen50to70, screen50, screen60, screen70, screenUptake, stockholm3_goteborg, stockholm3_risk_stratified,goteborg, risk_stratified, mixed_screening,regular_screen, single_screen}
 
-    public enum treatment_t {no_treatment, CM, RP, RT}
+    public enum TreatmentType {no_treatment, CM, RP, RT}
     
-    public enum survival_t {StageShiftBased, LeadTimeBased}
+    public enum Survival {StageShiftBased, LeadTimeBased}
     
-    public enum biomarker_model_t {random_correction, psa_informed_correction}
+    public enum BiomarkerModel {random_correction, psa_informed_correction}
 
     /* Parameters */
     double 
@@ -88,10 +88,12 @@ public class PersonExample {
     }
 
     /**
-       @brief Return the index for the lower bound of a sorted x for a given key. 
-       Based on C++'s lower_bound behaviour. Returns -1 if the key is less than x[0].
+       @brief Return the index for the lower bound of a sorted x[] for a given key.
+       That is, find the largest index i such that x[i]<=key.
+       Returns -1 if the key is less than x[0].
+       Based on Arrays.binarySearch and assumes that x is strictly increasing (i.e. no repeated values).
      **/
-    int lower_bound_index(double[] x, double key) {
+    int findInterval(double[] x, double key) {
 	int out = Arrays.binarySearch(x, key);
 	if (out < -1) out = -out - 2;
 	return out;
@@ -123,11 +125,11 @@ public class PersonExample {
     	    double v = 0.0, H0 = 0.0, tstar = 0.0;
     	    int i = 0, i0 = 0;
     	    if (from > 0.0) {
-    		i0 = lower_bound_index(t, from);
+    		i0 = findInterval(t, from);
     		H0 = H[i0] + (from - t[i0])*h[i0];
     	    }
     	    v = - Math.log(u) + H0;
-    	    i = lower_bound_index(H, v);
+    	    i = findInterval(H, v);
     	    tstar = t[i]+(v-H[i])/h[i];
     	    return tstar;
     	}
@@ -244,11 +246,11 @@ public class PersonExample {
     double 
 	ageClinicalDiagnosisLocalised = -1.0,
 	ageClinicalDiagnosisMetastatic = -1.0,
-	age_onset = -1.0,
+	ageCancerOnset = -1.0,
 	beta0 = -1.0,
 	beta1 = -1.0,
 	beta2 = -1.0;
-    ext_grade_t ext_grade;
+    ExtGrade ext_grade;
     Stage stage;
     Diagnosis dx;
     public void init () {
@@ -257,26 +259,22 @@ public class PersonExample {
 	stage = Stage.Healthy;
 	dx = Diagnosis.NotDiagnosed;
 	// Age of cancer onset
-	age_onset = 35.0 + Math.sqrt(2.0*ExponentialGen.nextDouble(rngCancer,1.0)/g_onset);
-	double t_onset = age_onset - 35.0;
+	ageCancerOnset = 35.0 + Math.sqrt(2.0*ExponentialGen.nextDouble(rngCancer,1.0)/g_onset);
+	double tCancerOnset = ageCancerOnset - 35.0;
 	// Gleason score
 	double u = rngCancer.nextDouble();
-	if (u < Math.exp(alpha8 + beta8 * t_onset))
-	    ext_grade = ext_grade_t.Gleason_ge_8;
-	else if (u > 1 - (alpha7 + beta7 * t_onset))
-	    ext_grade = ext_grade_t.Gleason_7;
-	else ext_grade = ext_grade_t.Gleason_le_6;
+	if (u < Math.exp(alpha8 + beta8 * tCancerOnset))
+	    ext_grade = ExtGrade.Gleason_ge_8;
+	else if (u > 1 - (alpha7 + beta7 * tCancerOnset))
+	    ext_grade = ExtGrade.Gleason_7;
+	else ext_grade = ExtGrade.Gleason_le_6;
 	// PSA random effects
 	beta0 = NormalGen.nextDouble(rngCancer,mubeta0,sebeta0);
 	beta1 = NormalPosGen.nextDouble(rngCancer,mubeta1,sebeta1);
 	beta2 = NormalPosGen.nextDouble(rngCancer,mubeta2[ext_grade.ordinal()],sebeta2[ext_grade.ordinal()]);
 	// schedule events
 	new OtherDeath().schedule(randOtherDeath.nextDouble(rngOtherDeath));
-	new Localised().schedule(age_onset);
-	// new OtherDeath().schedule (WeibullGen.nextDouble(rngOtherDeath,4.0,lambda(4.0,70.0), 0.0));
-	// if (rngCancer.nextDouble() < 0.2) {
-	//     new Cancer().schedule (WeibullGen.nextDouble(rngCancer,4.0,lambda(4.0,70.0), 0.0));
-	// }
+	new Localised().schedule(ageCancerOnset);
     }
     class OtherDeath extends cMessage {
 	public void execute() { sim.stop(); }
@@ -287,13 +285,13 @@ public class PersonExample {
     class Localised extends cMessage {
 	public void execute() {
 	    stage = Stage.Localised;
-	    double t_onset = age_onset - 35.0;
-	    double psa_onset = psa_mean(sim.time());
+	    double tCancerOnset = ageCancerOnset - 35.0;
+	    double psaOnset = psaMean(sim.time());
 	    double u = ExponentialGen.nextDouble(rngCancer,1.0);
-	    double age_m = (Math.log((beta1+beta2)*u/gm + psa_onset) - beta0 + beta2*t_onset) / (beta1+beta2) + 35.0;
-	    new Metastatic().schedule(age_m);
+	    double ageMetastatic = (Math.log((beta1+beta2)*u/gm + psaOnset) - beta0 + beta2*tCancerOnset) / (beta1+beta2) + 35.0;
+	    new Metastatic().schedule(ageMetastatic);
 	    u = ExponentialGen.nextDouble(rngCancer,1.0);
-	    ageClinicalDiagnosisLocalised = (Math.log((beta1+beta2)*u/gc + psa_onset) - beta0 + beta2*t_onset) / (beta1+beta2) + 35.0;
+	    ageClinicalDiagnosisLocalised = (Math.log((beta1+beta2)*u/gc + psaOnset) - beta0 + beta2*tCancerOnset) / (beta1+beta2) + 35.0;
 	    new ClinicalDiagnosis().schedule(ageClinicalDiagnosisLocalised);
 	}
     }
@@ -301,9 +299,9 @@ public class PersonExample {
 	public void execute() {
 	    stage = Stage.Metastatic;
 	    double u = ExponentialGen.nextDouble(rngCancer,1.0);
-	    double psa = psa_mean(sim.time());
-	    double t_onset = age_onset - 35.0;
-	    ageClinicalDiagnosisMetastatic = (Math.log((beta1+beta2)*u/(gc*thetac) + psa) - beta0 + beta2*t_onset) / (beta1+beta2) + 35.0;
+	    double psa = psaMean(sim.time());
+	    double tCancerOnset = ageCancerOnset - 35.0;
+	    ageClinicalDiagnosisMetastatic = (Math.log((beta1+beta2)*u/(gc*thetac) + psa) - beta0 + beta2*tCancerOnset) / (beta1+beta2) + 35.0;
 	    new ClinicalDiagnosis().schedule(ageClinicalDiagnosisMetastatic);
 	}
     }
@@ -347,14 +345,14 @@ public class PersonExample {
 	}
     }
 
-    private double psa_mean(double age) {
+    private double psaMean(double age) {
 	double t = age < 35.0 ? 0.0 : age - 35.0;
-	double t_onset = age_onset - 35.0;
-	double yt = age<age_onset ? Math.exp(beta0+beta1*t) : Math.exp(beta0+beta1*t+beta2*(t-t_onset));
+	double tCancerOnset = ageCancerOnset - 35.0;
+	double yt = age<ageCancerOnset ? Math.exp(beta0+beta1*t) : Math.exp(beta0+beta1*t+beta2*(t-tCancerOnset));
 	return yt;
     }
-    private double psa_measured(double age) {
-	return psa_mean(age)*Math.exp(NormalGen.nextDouble(rngCancer, 0.0, Math.sqrt(tau2)));
+    private double psaMeasured(double age) {
+	return psaMean(age)*Math.exp(NormalGen.nextDouble(rngCancer, 0.0, Math.sqrt(tau2)));
     }
     
     public void simulateOneRun () {
@@ -362,10 +360,10 @@ public class PersonExample {
 	init();
 	System.out.println(csim.getEventList());
 	csim.start();
-	System.out.println(psa_mean(35));
-	System.out.println(psa_measured(35));
-	System.out.println(psa_mean(105));
-	System.out.println(psa_measured(105));
+	System.out.println("psaMean(35) = " + psaMean(35));
+	System.out.println("psaMeasured(35) = " + psaMeasured(35));
+	System.out.println("psaMean(105) = " + psaMean(105));
+	System.out.println("psaMeasured(105) = " + psaMeasured(105));
 	noisy = false;
     }
     
@@ -383,7 +381,7 @@ public class PersonExample {
     public static void main (String[] args) {
 
 	PersonExample person = new PersonExample();
-	Integer n = 1000000;
+	Integer n = 10000;
 	person.simulateOneRun ();
 	person.simulateMany (n, false);
 	System.out.println(person.eventReport.pt);

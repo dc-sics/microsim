@@ -1,3 +1,5 @@
+package christianmesch.simulationworker.misc;
+
 import java.util.Arrays;
 import java.util.ArrayList;
 
@@ -5,10 +7,12 @@ class NumericInterpolate {
     double[] x, y, slope;
     int n;
     /**
-       @brief Return the index for the lower bound of a sorted x for a given key. 
-       Based on C++'s lower_bound behaviour. Returns -1 if the key is less than x[0].
+       @brief Return the index for the lower bound of a sorted x[] for a given key.
+       That is, find the largest index i such that x[i]<=key.
+       Returns -1 if the key is less than x[0].
+       Based on Arrays.binarySearch and assumes that x is strictly increasing (i.e. no repeated values).
      **/
-    int lower_bound_index(double[] x, double key) {
+    int findInterval(double[] x, double key) {
 	int out = Arrays.binarySearch(x, key);
 	if (out < -1) out = -out - 2;
 	return out;
@@ -42,7 +46,7 @@ class NumericInterpolate {
 	if (xfind<=x[0]) return y[0];
 	else if (xfind>=x[n-1]) return y[n-1]+slope[n-2]*(xfind-x[n-1]); // linear
 	else {
-	    i = lower_bound_index(x, xfind);
+	    i = findInterval(x, xfind);
 	    return y[i]+slope[i]*(xfind-x[i]);
 	}
     }
@@ -51,7 +55,7 @@ class NumericInterpolate {
 	if (yfind<=y[0]) return x[0];
 	else if (yfind>=y[n-1]) return x[n-1]+(yfind-y[n-1])/slope[n-2];
 	else {
-	    i = lower_bound_index(y, yfind);
+	    i = findInterval(y, yfind);
 	    return x[i]+(yfind-y[i])/slope[i];
 	}
     }
