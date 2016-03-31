@@ -34,6 +34,13 @@ public class Table3D<A extends Comparable<A>, B extends Comparable<B>, C extends
 	
 	return super.put(key, value);
     }
+
+
+    public void put(A[] as, B[] bs, C[] cs, D[] values) {
+	for (int i=0; i<as.length; ++i)
+	    put(new Triple<A,B,C>(as[i],bs[i],cs[i]), values[i]);
+    }
+    
     
     public D floor(Triple<A, B, C> key) {
 	Triple<A, B, C> newKey = new Triple<>(setA.floor(key.a), 
