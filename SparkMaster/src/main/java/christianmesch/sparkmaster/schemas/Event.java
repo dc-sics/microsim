@@ -5,41 +5,32 @@
  */
 package christianmesch.sparkmaster.schemas;
 
-import christianmesch.simulationworker.models.States;
+import christianmesch.simulationworker.misc.EventKey;
 import java.io.Serializable;
 
 /**
  *
  * @author Christian Mesch
  */
-public class Event implements Serializable {
+public class Event extends Schema implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
-	
-	private String healthState;
-	private String diagnosis;
-	
+
 	private String event;
 	private Double age;
 	
 	private Integer value;
 
-	public String getHealthState() {
-		return healthState;
+	public Event() {}
+	
+	public Event(EventKey key, Integer value) {
+		super(key.getStates());
+		
+		this.event = key.getEvent();
+		this.age = key.getAge();
+		this.value = value;
 	}
-
-	public void setHealthState(String healthState) {
-		this.healthState = healthState;
-	}
-
-	public String getDiagnosis() {
-		return diagnosis;
-	}
-
-	public void setDiagnosis(String diagnosis) {
-		this.diagnosis = diagnosis;
-	}
-
+	
 	public String getEvent() {
 		return event;
 	}
@@ -63,7 +54,4 @@ public class Event implements Serializable {
 	public void setValue(Integer value) {
 		this.value = value;
 	}
-
-	
-
 }

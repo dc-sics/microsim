@@ -6,30 +6,23 @@
 package christianmesch.sparkmaster;
 
 import christianmesch.simulationworker.misc.EventKey;
-import christianmesch.sparkmaster.functions.CollectFunction;
-import christianmesch.sparkmaster.functions.FilterEventsFunction;
-import christianmesch.sparkmaster.functions.FilterPTsFunction;
 import christianmesch.sparkmaster.functions.SimulationFunction;
 import christianmesch.sparkmaster.misc.Utils;
 import christianmesch.sparkmaster.schemas.Event;
-import christianmesch.simulationworker.misc.EventKeyFilter;
-import christianmesch.simulationworker.misc.PTKeyFilter;
+import christianmesch.simulationworker.misc.PTKey;
 import christianmesch.simulationworker.misc.Report;
-import christianmesch.sparkmaster.functions.PairSimulationFunction;
-import christianmesch.sparkmaster.misc.ChartCreator;
+import christianmesch.sparkmaster.schemas.PersonTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
-import scala.Tuple2;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStreamBase;
 
@@ -88,70 +81,46 @@ public class SparkMaster {
 		// This will be the complete data set from the simulations distributed on the cluster
 		JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
 		
+		// Create RDDs and DataFrames for the events and person times
 		JavaRDD<Event> events = reports.flatMap(new FlatMapFunction<Report, Event>() {
 			@Override
-			public Iterable<Event> call(Report t) throws Exception {
+			public Iterable<Event> call(Report t) {
 				List<Event> list = new ArrayList<>(t.getEvents().size());
+				
 				for(Entry<EventKey, Integer> entry : t.getEvents().entrySet()) {
-					Event event = new Event();
-					
-					event.setHealthState(entry.getKey().getStates().getHealthState().toString());
-					event.setDiagnosis(entry.getKey().getStates().getDiagnosis().toString());
-					event.setEvent(entry.getKey().getEvent());
-					event.setAge(entry.getKey().getAge());
-					event.setValue(entry.getValue());
-					
-					list.add(event);
+					list.add(new Event(entry.getKey(), entry.getValue()));
 				}
 				
 				return list;
 			}
-		}).cache();
-		
-		DataFrame schemaEvents = sqlContext.createDataFrame(events, Event.class);
-		schemaEvents.registerTempTable("events");
-		
-		
-		DataFrame cancer = sqlContext.sql("SELECT * FROM events WHERE age >= 30");
-		cancer.printSchema();
-		cancer.show();
-		
-		/*
-		JavaPairRDD<EventKey, Integer> events = dataSet.flatMapToPair(new PairSimulationFunction(REPLICATIONS_PER_WORKER));
-		
-		JavaPairRDD<EventKey, Integer> reducedEvents = events.reduceByKey((Integer v1, Integer v2) -> {
-			return v1 + v2;
 		});
 		
-		for(Tuple2<EventKey, Integer> tuple : reducedEvents.sortByKey().collect()) {
-			System.out.println(tuple._1 + " = " + tuple._2);
-		}
-		*/
+		DataFrame schemaEvents = sqlContext.createDataFrame(events, Event.class).cache();
+		schemaEvents.registerTempTable("events");
 		
-		//Report allReports = reports.reduce(new CollectFunction());
+		JavaRDD<PersonTime> personTimes = reports.flatMap(new FlatMapFunction<Report, PersonTime>() {
+			@Override
+			public Iterable<PersonTime> call(Report t) {
+				List<PersonTime> list = new ArrayList<>(t.getEvents().size());
+				
+				for(Entry<PTKey, Double> entry : t.getPersonTimes().entrySet()) {
+					list.add(new PersonTime(entry.getKey(), entry.getValue()));
+				}
+				
+				return list;
+			}
+		});
 		
-		/* Comment everything to do with filter for now
+		DataFrame schemaPTs = sqlContext.createDataFrame(personTimes, PersonTime.class).cache();
+		schemaPTs.registerTempTable("persontimes");
 		
-		// Create a filter to filter the events
-		States eventsStates = new States(States.HealthState.LOCOREGIONAL, States.Diagnosis.NONE);
-		EventKeyFilter eventsKey = new EventKeyFilter(eventsStates, "cancerdeath", 56.0, 70.0);
+		// example of aggregating the data and writing out as json
+		schemaPTs.groupBy("diagnosis", "healthState", "age")
+				.agg(org.apache.spark.sql.functions.sum(schemaPTs.col("value")).alias("sum_value"))
+				.orderBy("healthState", "diagnosis", "age")
+				.coalesce(1) // copy everything to one worker. Can use FileUtil.copyMerge if it proves to be too large
+				.write().format("json").save("/Users/christianmesch/Desktop/test5.json");		
 		
-		// Filter the events and collect the results
-		Report filteredEvents = reports.map(new FilterEventsFunction(eventsKey)).
-				reduce(new CollectFunction());
-		
-		// Create a filter for the person times
-		States ptStates = new States(States.HealthState.HEALTHY, States.Diagnosis.NOT_DIAGNOSED);
-		PTKeyFilter ptKey = new PTKeyFilter(ptStates, 80.0, 90.0);
-		
-		// Filter the person times and collect the results
-		Report filteredPTs = reports.map(new FilterPTsFunction(ptKey)).
-				reduce(new CollectFunction());
-		
-		// Print the filtered reports
-		filteredEvents.printEvents();
-		filteredPTs.printPersonTimes();
-		*/
 	/*	
 		ChartCreator chart = new ChartCreator(allReports)
 				.setTitle("Title")
@@ -165,8 +134,6 @@ public class SparkMaster {
 				.setEvents("Cancer");
 		
 		chart.createRateChart();
-		
-		allReports.report();
 */
 		context.stop();
 	}
