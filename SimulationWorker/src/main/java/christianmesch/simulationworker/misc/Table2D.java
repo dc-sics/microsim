@@ -25,6 +25,17 @@ public class Table2D<A extends Comparable<A>, B extends Comparable<B>, C>
 	super();
     }
 
+    /** @brief Inner class for the key.  
+
+	This is meant to be informative. 
+	The outer class extends the HashMap using Pair<A,B> (cf. Key<A,B>).
+     **/
+    public static class Key<A,B> extends Pair<A,B> {
+	public Key(A a, B b) {
+	    super(a,b);
+	}
+    }
+
     @Override
 	public C put(Pair<A, B> key, C value) {
 	setA.add(key.a);
@@ -32,19 +43,30 @@ public class Table2D<A extends Comparable<A>, B extends Comparable<B>, C>
 	return super.put(key, value);
     }
 
+    public C put(A a, B b, C value) {
+	setA.add(a);
+	setB.add(b);
+	Pair<A,B> newKey = new Pair<>(a,b);
+	return super.put(newKey, value);
+    }
+
     public void put(A[] as, B[] bs, C[] values) {
 	for (int i=0; i<as.length; ++i)
 	    put(new Pair<A,B>(as[i],bs[i]), values[i]);
     }
     
-    public C floor(Pair<A, B> key) {
-	Pair<A, B> newKey = new Pair<>(setA.floor(key.a), setB.floor(key.b));
+    public C floor(A a, B b) {
+	Pair<A, B> newKey = new Pair<>(setA.floor(a), setB.floor(b));
 	return super.get(newKey);
     }
 
-    private static class Key extends Pair<Double,Double> {
-	public Key(Double age, Double grade) {
-	    super(age,grade);
+    public C floor(Pair<A, B> key) {
+	return floor(key.a, key.b);
+    }
+
+    private static class KeyDD extends Pair<Double,Double> {
+	public KeyDD(Double a, Double b) {
+	    super(a,b);
 	}
     }
 
@@ -59,9 +81,9 @@ public class Table2D<A extends Comparable<A>, B extends Comparable<B>, C>
 	Double[] values = {0.1, 0.2, 0.3, 0.4};
 	lookup.put(ages,grades,values);
 	
-	System.out.println(lookup.floor(new Key(56.3, 2.0))); // 0.3
-	System.out.println(lookup.floor(new Key(80.2, 0.1))); // 0.2
-	System.out.println(lookup.floor(new Key(55.0, 0.1))); // 0.1
+	System.out.println(lookup.floor(56.3, 2.0)); // 0.3
+	System.out.println(lookup.floor(new KeyDD(80.2, 0.1))); // 0.2
+	System.out.println(lookup.floor(new Table2D.Key<Double,Double>(55.0, 0.1))); // 0.1
     }
 
 }
