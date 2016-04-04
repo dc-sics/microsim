@@ -21,6 +21,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 import umontreal.ssj.rng.MRG32k3a;
@@ -74,12 +75,11 @@ public class SparkMaster {
 		List<Map<String, RandomStreamBase>> streamList = Utils.inflateStreams(randomStreams,
 				NUM_WORKERS, REPLICATIONS_PER_WORKER);
 		
-		
 		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(streamList);
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
-		JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER)).cache();
+		JavaRDD<Report> reports = dataSet.map(new SimulationFunction(REPLICATIONS_PER_WORKER));
 		
 		// Create RDDs and DataFrames for the events and person times
 		JavaRDD<Event> events = reports.flatMap(new FlatMapFunction<Report, Event>() {
@@ -95,7 +95,13 @@ public class SparkMaster {
 			}
 		});
 		
-		DataFrame schemaEvents = sqlContext.createDataFrame(events, Event.class).cache();
+		DataFrame schemaEvents = sqlContext.createDataFrame(events, Event.class)
+				.coalesce(1)
+				.groupBy("event", "healthState", "diagnosis", "age")
+				.agg(org.apache.spark.sql.functions.sum("value").alias("sum_value"))
+				.coalesce(NUM_WORKERS)
+				.cache();
+		
 		schemaEvents.registerTempTable("events");
 		
 		JavaRDD<PersonTime> personTimes = reports.flatMap(new FlatMapFunction<Report, PersonTime>() {
@@ -111,15 +117,24 @@ public class SparkMaster {
 			}
 		});
 		
-		DataFrame schemaPTs = sqlContext.createDataFrame(personTimes, PersonTime.class).cache();
+		DataFrame schemaPTs = sqlContext.createDataFrame(personTimes, PersonTime.class)
+				.coalesce(1)
+				.groupBy("healthState", "diagnosis", "age")
+				.agg(org.apache.spark.sql.functions.sum("value").alias("sum_value"))
+				.coalesce(NUM_WORKERS)
+				.cache();
+		
 		schemaPTs.registerTempTable("persontimes");
 		
-		// example of aggregating the data and writing out as json
-		schemaPTs.groupBy("diagnosis", "healthState", "age")
-				.agg(org.apache.spark.sql.functions.sum(schemaPTs.col("value")).alias("sum_value"))
-				.orderBy("healthState", "diagnosis", "age")
+		// Example of writing everything out as JSON on one worker
+		// (i.e. one file instead of NUM_WORKERS files.)
+		schemaPTs.orderBy("healthState", "diagnosis", "age")
 				.coalesce(1) // copy everything to one worker. Can use FileUtil.copyMerge if it proves to be too large
-				.write().format("json").save("/Users/christianmesch/Desktop/test5.json");		
+				.write().format("json").save("/Users/christianmesch/Desktop/pts.json");
+		
+		schemaEvents.orderBy("event", "healthState", "diagnosis", "age")
+				.coalesce(1)
+				.write().format("json").save("/Users/christianmesch/Desktop/events.json");
 		
 	/*	
 		ChartCreator chart = new ChartCreator(allReports)
