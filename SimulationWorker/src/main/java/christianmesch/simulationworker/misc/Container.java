@@ -23,6 +23,7 @@ public class Container {
 		this.report = report;
 		this.randomStreams = randomStreams;
 		this.person = person;
+		person.getStates().setAttribute(randomStreams.get("attributes").nextInt(1,100000));
 	}
 
 	public Report getReport() {
@@ -42,6 +43,7 @@ public class Container {
 	 */
 	public void resetPerson() {
 		person = person.reset();
+		person.getStates().setAttribute(randomStreams.get("attributes").nextInt(1,100000));
 	}
 	
 	public void resetNextSubstreams() {
