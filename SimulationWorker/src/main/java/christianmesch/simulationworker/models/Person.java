@@ -69,6 +69,14 @@ public class Person {
 	}
 	
 	/**
+	 * Return states object
+	 * @return States object
+	 */
+	public States getStates() {
+		return states;
+	}
+	
+	/**
 	 * Return a copy of the persons states
 	 * @return States Copy of the persons states
 	 */

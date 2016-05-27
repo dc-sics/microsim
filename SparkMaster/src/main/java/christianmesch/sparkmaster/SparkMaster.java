@@ -104,7 +104,7 @@ public class SparkMaster {
 		filteredPTs.printPersonTimes();
 		*/
 
-		System.out.writeln("Life expectancy = " + report.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER);
+		System.out.println("Life expectancy = " + allReports.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER));
 		
 		// ChartCreator chart = new ChartCreator(allReports)
 		// 		.setTitle("Title")
