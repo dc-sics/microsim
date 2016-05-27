@@ -199,12 +199,22 @@ public class Report implements Serializable {
 		*/
 		
 		// For debug purposes
-		double count = 0;
+		double total = 0.0;
 		for(Double d : personTimes.values()) {
-			count += d;
+			total += d;
 		}
 		
-		System.out.println(count);
+		System.out.println(total);
+	}
+
+
+	public double lifeExpectancy(int n) {
+		double total = 0.0;
+		for(Double d : personTimes.values()) {
+			total += d;
+		}
+		
+		return total/n;
 	}
 	
 	/**
