@@ -51,7 +51,7 @@ public class SparkMaster {
 		// Constants for number of workers and replications per worker
 		// NUM_WORKERS * REPLICATIONS_PER_WORKER = Full # of replications
 		int NUM_WORKERS = 10;
-		int REPLICATIONS_PER_WORKER = 100000;
+		int REPLICATIONS_PER_WORKER = 1000000;
 		
 		if(args.length == 2) {
 			NUM_WORKERS = Integer.valueOf(args[0]);
@@ -103,21 +103,23 @@ public class SparkMaster {
 		filteredEvents.printEvents();
 		filteredPTs.printPersonTimes();
 		*/
+
+		System.out.writeln("Life expectancy = " + report.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER);
 		
-		ChartCreator chart = new ChartCreator(allReports)
-				.setTitle("Title")
-				.setxLabel("Age (years)")
-				.setyLabel("Incidence rate per 100,000")
-				.setLineName("Line name")
-				.setHeight(600)
-				.setWidth(800)
-				.setStepSize(5)
-				.setMultiplier(100000)
-				.setEvents("Cancer");
+		// ChartCreator chart = new ChartCreator(allReports)
+		// 		.setTitle("Title")
+		// 		.setxLabel("Age (years)")
+		// 		.setyLabel("Incidence rate per 100,000")
+		// 		.setLineName("Line name")
+		// 		.setHeight(600)
+		// 		.setWidth(800)
+		// 		.setStepSize(5)
+		// 		.setMultiplier(100000)
+		// 		.setEvents("Cancer");
 		
-		chart.createRateChart();
+		// chart.createRateChart();
 		
-		allReports.report();
+		// allReports.report();
 
 		context.stop();
 	}
