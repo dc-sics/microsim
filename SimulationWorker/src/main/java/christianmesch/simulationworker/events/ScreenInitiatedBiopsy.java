@@ -8,14 +8,13 @@ package christianmesch.simulationworker.events;
 import christianmesch.simulationworker.misc.Container;
 import umontreal.ssj.simevents.Simulator;
 
-
 /**
  *
  * @author Christian Mesch
  */
-public class Death extends MyEvent {
-	
-	public Death(Simulator sim, Container container) {
+public class ScreenInitiatedBiopsy extends MyEvent {
+
+	public ScreenInitiatedBiopsy(Simulator sim, Container container) {
 		super(sim, container);
 	}
 
@@ -23,8 +22,6 @@ public class Death extends MyEvent {
 	public void actions() {
 		logEvent();
 		logPersonTime();
-		
-		sim.stop();
 	}
 	
 }

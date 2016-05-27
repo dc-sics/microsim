@@ -6,14 +6,9 @@
 package christianmesch.sparkmaster;
 
 import christianmesch.sparkmaster.functions.CollectFunction;
-import christianmesch.sparkmaster.functions.FilterEventsFunction;
-import christianmesch.sparkmaster.functions.FilterPTsFunction;
 import christianmesch.sparkmaster.functions.SimulationFunction;
 import christianmesch.sparkmaster.misc.Utils;
-import christianmesch.simulationworker.misc.EventKeyFilter;
-import christianmesch.simulationworker.misc.PTKeyFilter;
 import christianmesch.simulationworker.misc.Report;
-import christianmesch.simulationworker.models.States;
 import christianmesch.sparkmaster.misc.ChartCreator;
 import java.util.HashMap;
 import java.util.List;
@@ -63,9 +58,8 @@ public class SparkMaster {
 
 		// Add Streams to a map with the name you want to use to access them as key
 		Map<String, RandomStreamBase> randomStreams = new HashMap<>();
-		randomStreams.put("Cancer", new MRG32k3a());
-		randomStreams.put("Death", new MRG32k3a());
-		randomStreams.put("CancerDeath", new MRG32k3a());
+		randomStreams.put("cancer", new MRG32k3a());
+		randomStreams.put("otherDeath", new MRG32k3a());
 
 		// Create list containing maps of randomstreams for each worker
 		List<Map<String, RandomStreamBase>> streamList = Utils.inflateStreams(randomStreams,
@@ -102,7 +96,7 @@ public class SparkMaster {
 		filteredEvents.printEvents();
 		filteredPTs.printPersonTimes();
 		*/
-		
+		/*
 		ChartCreator chart = new ChartCreator(allReports)
 				.setTitle("Title")
 				.setxLabel("Age (years)")
@@ -115,7 +109,7 @@ public class SparkMaster {
 				.setEvents("Cancer");
 		
 		chart.createRateChart();
-		
+*/		
 		allReports.report();
 
 		context.stop();

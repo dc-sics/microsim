@@ -28,20 +28,88 @@ For comparison with the Cancer Registry:
 
 
 
-** Outline
+** Outline: Microsimulation using Big Data tools, with an application to cancer screening.
+
+*** Abstract
+Aim: use Big Data tools for microsimulation. This is a bit vague.
+
+Why do this? Hadoop has become popular for distributed computing for Big Data. Map-reduce was the founding algorithm, however it is not well suited to many scientific applications Data scientists have found that computational
 
 *** Introduction
 
+ + Aims
+ + Motivation
+ + Hadoop versus HPC. Hardware, software and communities. Hardware: commodity hardware versus specialised hardware. Software: JVM vs C++. (It makes no sense to me that there are two almost completely separate ecosystems, with little code shared between the two ecosystems.) Communities: Big Data was born through industries and has a strong database-centric background. In contrast, traditional HPC is very computationally centric, with less interest in large data inputs (while generating vast amounts of data from simulations).
+ + Hadoop ecosystem: what do we need to describe? HDFS, Map-Reduce, Spark and Flink, HBase (and other data stores?).
  + Microsimulation
  + How to scale out?
  + Hadoop + Spark as one approach
  + Related code
 
+Context: Scientific computing using distributed systems. We want to scale our simulations. Introduce the MVP? I would like to see that you can get closed form solutions to your example. If we do the math, then we can say how close the simulations are to the truth (bias and precision).
+
++ Microsimulation: ref to Wikipedia for a definition, or use a definition provided by Ann Harding. Taxonomy: static versus dynamic (we are interested in dynamic); discrete time versus continuous time (we are interesting in continuous time, as we have rare outcomes).
+
+Definitions: Markov model (transitions depend on one time scale, such as age, and are independent of time in state); semi-Markov model (transitions depend on time in the state). We are working with a combination of Markov and semi-Markov models. 
+
+Why use simulation? Because the semi-Markov models are difficult to solve analytically or numerically, with levels of nested integrations. We avoid the explicit integrations using simulation. The disadvantage is that we now need to deal with stochastic (or "Monte Carlo") variation.
+
++ The microsimulations are well suited to Map-Reduce: we have independent simulations that are embarrassingly parallel, run on different cores or workers, and then the results from the simulations are aggregated. However, it is computationally efficient to collect statistics on the simulations as the simulations progress, rather than collect raw simulation output for post-processing.
+
++ A common design issue for microsimulation is how to collect and persist the simulation output. As an example, the JAS-mine Java simulation library is marketed as providing built-in database support. A recent microsimulation library for C++ (OpenM++), developed on behalf of Statistics Canada, describes a variety of approaches for dealing with data persistance, with different approaches better suited to different users and uses (http://ompp.sourceforge.net/wiki/index.php/Model_Architecture). Hadoop provides a distributed file system "baked in" to the framework, so there is no need to trade off between flat files, flat files with buffering (e.g. MPI-IO), client-server databases or file-based databases.
+
++ Related code: the standard for microsimulation is MODGEN, which is a closed source software package from Statistics Canada (ref). The package includes a C++ pre-processor, which allows for a higher level description of the model and for flexible specification of the output tables.  The OpenM++ model is an open source re-implementation that is functionally equivalent to (most of) MODGEN. There are a number of Java libraries for discrete time microsimulation, often building on agent-based modelling frameworks. Examples include LIAM2 (which allows for easy model specification using Python; http://jasss.soc.surrey.ac.uk/17/3/9.html), Mic-Mac core and JamSim, both of which allow for a Markov model specifiation in R and a Java simulation engine. 
+
+There are many discrete event simulation libraries available in both Java and C++. Related to this project, Mark Clements and colleagues developed an R and C++ microsimulation framework for modelling cancer screening (https://github.com/mclements/microsimulation/tree/develop). This framework provided inspiration for this project.
+
+
+
 *** Methods
  + SSJ library
- + Spark
- + Common random numbers: SSJ vs Splittable
+ + Hadoop, Spark, Flink.
+ + Common random numbers
  + Framework?
  + Example simulation: prostate cancer screening
- + How to evaluate ease of use?
- + How to evaluate performance?
+ + How to evaluate ease of use? Ask Jim.
+ + How to evaluate performance? Experimental design.
+
+SSJ library: what facilities were used? Can you show a trivial model? (Or is this too close to being a tutorial?) Provide an explanation for how DES works.
+
+Random numbers: streams and sub-streams. Reference: http://pubsonline.informs.org/doi/abs/10.1287/opre.50.6.1073.358. 
+
+Motivate the example used. What would be a more complete model? (Prostate cancer simulation model from the R package.)
+
+For someone new wanting to do microsimulation on Hadoop, what would they need to learn? Obviously: the Java simulation library. And? Map-Reduce and the basics of Spark are important.
+
+Lessons learnt: send objects (which are serialisable) to the RDDs, rather than sending text strings. This is important!
+
+We do not actively work with threads. Moreover, the SSJ Java simulation library is not thread-safe. Is this an issue? (No - discuss).
+
+
+*** Results
+
++ Code length
++ Run times - with profiling? Do you want to know what's slow (that is, bottlenecks)? Ask Jim.
++ Experimental design: multiple runs, averaged (+ variance). Is there much variation depending on load? How many servers? Are there configuration options that you need to set or are the defaults fine?
+
+Tables?
+Figures?
+
+
+*** Discussion
+
+
++ Should we use Hadoop for microsimulation? Arguably, yes. The Java simulation libraries are well developed, comparatively straighforward, well documented and relatively simple to use. (How easy was it to use the libraries in Spark and Flink??)
++ Should we use Hadoop for scientific computing? It depends on what one is looking for. As examples, it is arguably easier for scientists to use Java and Scala than using C++. Hadoop makes it easy to use distributed computing. Programming with MPI is difficult (ref "HPC is dying and MPI is killing it"). 
+
++ Data security is a potential concern for distributed environments. Are secure Hadoop solutions available? 
+
++ Distribution is slow: the tasks need to be large to make the distribution worthwhile. This is similar to our experience with R and MPI. Shared memory is fast and simple: is there an analogue for Hadoop? A standard solution on HPC is to use a hybrid solution with OpenMP for shared memory and MPI for distributed memory: this requires reductions for both OpenMP and for MPI, which can be awkward. (For our case, we needed to re-write the C++ code to not use static methods and not use the R random number generators - sigh).
+
+How else could this be done? Is there any evidence for convergence between HPC and Hadoop? (No.) There are interesting new HPC languages that may ease the use of MPI (e.g. Chapel, X10, UPC). X10 is particularly interesting, as it allows for code to be run on either MPI or on the JVM (check this!). Erlang and the BEAM provide an interesting alternative for distributed computing, although it is unclear whether they would be well suited to scientific computing. 
+
+Future work:
+ + "Micro-data" simulations, where the observed population and health registers are used as the basis for the simulations: take the registers, impute the missing natural history information, and then apply different screening scenarios to the actual population. This would need to be done in a secure environment, as the data /are/ the population. The imputation would be a computationally demanding task that uses larger datasets than required for the "synthetic" simulations used in this project. 
+ + Scaling for parameter estimation, possibly using Bayesian approaches or maximum likelihood estimation. In simulation, the parameter estimation is called "calibration". Confusingly, the microsimulation researchers, who often come from a economics background, call the estimation an "alignment" process (ref: http://jasss.soc.surrey.ac.uk/17/1/15.html).
+ + Are there situations where the simulations will not fit within memory? Event-logging for a large simulation may use up a chunk of memory, however the workers tend to have large memory allocations.
+ + Proof of concept for a Big Data grant.
