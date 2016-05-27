@@ -38,6 +38,7 @@ public class States implements Serializable, Comparable<States> {
 	
 	private HealthState healthState;
 	private Diagnosis diagnosis;
+	private int attribute;
 	
 	/**
 	 * Standard constructor.
@@ -46,6 +47,7 @@ public class States implements Serializable, Comparable<States> {
 	public States() {
 		healthState = HealthState.HEALTHY;
 		diagnosis = Diagnosis.NOT_DIAGNOSED;
+		attribute = 0;
 	}
 	
 	/**
@@ -56,6 +58,7 @@ public class States implements Serializable, Comparable<States> {
 	public States(States original) {
 		healthState = original.healthState;
 		diagnosis = original.diagnosis;
+		attribute = original.attribute;
 	}
 
 	/**
@@ -63,9 +66,10 @@ public class States implements Serializable, Comparable<States> {
 	 * @param healthState Health state
 	 * @param diagnosis  Diagnosis
 	 */
-	public States(HealthState healthState, Diagnosis diagnosis) {
+	public States(HealthState healthState, Diagnosis diagnosis, int attribute) {
 		this.healthState = healthState;
 		this.diagnosis = diagnosis;
+		this.attribute = attribute;
 	}
 	
 	public HealthState getHealthState() {
@@ -82,6 +86,14 @@ public class States implements Serializable, Comparable<States> {
 
 	public void setDiagnosis(Diagnosis diagnosis) {
 		this.diagnosis = diagnosis;
+	}
+
+	public int getAttribute() {
+		return attribute;
+	}
+
+	public void setAttribute(int attribute) {
+		this.attribute = attribute;
 	}
 
 	/**
@@ -114,6 +126,7 @@ public class States implements Serializable, Comparable<States> {
 		int hash = 3;
 		hash = 97 * hash + Objects.hashCode(this.healthState);
 		hash = 97 * hash + Objects.hashCode(this.diagnosis);
+		hash = 97 * hash + Objects.hashCode(this.attribute);
 		return hash;
 	}
 
@@ -137,7 +150,11 @@ public class States implements Serializable, Comparable<States> {
 			return false;
 		}
 		
-		return this.diagnosis == other.diagnosis;
+		if (this.diagnosis != other.diagnosis) {
+			return false;
+		}
+		
+		return this.attribute == other.attribute;
 	}
 	
 	@Override
@@ -148,6 +165,8 @@ public class States implements Serializable, Comparable<States> {
 				.append(healthState)
 				.append(", diagnosis = ")
 				.append(diagnosis)
+				.append(", attribute = ")
+				.append(attribute)
 				.append(" }");
 		
 		return builder.toString();
@@ -159,8 +178,10 @@ public class States implements Serializable, Comparable<States> {
 		if(health != 0) return health;
 		
 		int diag = diagnosis.compareTo(o.diagnosis);
+		if(diag != 0) return diag;
 		
-		return diag;
+		int attr = Integer.compare(attribute, o.attribute);
+		return attr;
 	}
 
 	
