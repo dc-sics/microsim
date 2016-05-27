@@ -82,11 +82,14 @@ public class Report implements Serializable {
 		final double previous = Math.floor(person.getPreviousTime());
 		final double now = Math.floor(age);
 		final States states = person.copyStates();
+
+		// do not update if there has been no change in time
+		if (age == person.getPreviousTime()) return;
 		
 		// Go from last logging time to now and add person times
 		for(double t = previous; t <= now; t++) {
 			PTKey key = new PTKey(states, t);
-			double value = (personTimes.containsKey(key) ? personTimes.get(key) : 0.0)
+			double value = personTimes.getOrDefault(key, 0.0)
 					+ Math.min(t + 1.0, age) - Math.max(t, person.getPreviousTime());
 			
 			personTimes.put(key, value);

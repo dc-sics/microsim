@@ -21,9 +21,7 @@ public class CancerDeath extends MyEvent {
 	}
 
 	@Override
-	public void actions() {
-		logEvent();
-		logPersonTime();
+	public void execute() {
 		
 		sim.stop();
 	}

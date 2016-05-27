@@ -23,14 +23,8 @@ public class Cancer extends MyEvent {
 	}
 
 	@Override
-	public void actions() {
-		logEvent();
-		logPersonTime();
+	public void execute() {
 		
-		// Update previous time (still unsure if this is needed)
-		container.getPerson().setPreviousTime(sim.time());
-		
-		// This might be above logger();, not sure.
 		container.getPerson().setHealthState(States.HealthState.LOCOREGIONAL);
 		
 		new CancerDeath(sim, container).schedule(WeibullGen.nextDouble(container.getRandomStreams()

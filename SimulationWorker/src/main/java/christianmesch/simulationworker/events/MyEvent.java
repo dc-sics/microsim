@@ -63,5 +63,13 @@ public abstract class MyEvent extends Event {
 	public double sendingTime() {
 		return sendingTime;
 	}	
-	
+
+	public void actions() {
+		logEvent();
+		logPersonTime();
+		execute();
+		container.getPerson().setPreviousTime(sim.time());
+	}
+
+	public abstract void execute();
 }

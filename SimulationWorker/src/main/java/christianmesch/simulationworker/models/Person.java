@@ -55,7 +55,6 @@ public class Person {
 	public void setHealthState(States.HealthState state) {
 		if(states.getHealthState() != state) {
 			states.setHealthState(state);
-			previousTime = simulator.time();
 		}
 	}
 	
@@ -66,7 +65,6 @@ public class Person {
 	public void setDiagnosis(States.Diagnosis state) {
 		if(states.getDiagnosis() != state) {
 			states.setDiagnosis(state);
-			previousTime = simulator.time();
 		}
 	}
 	
