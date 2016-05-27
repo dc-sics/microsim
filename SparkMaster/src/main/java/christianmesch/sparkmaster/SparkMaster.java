@@ -66,6 +66,7 @@ public class SparkMaster {
 		randomStreams.put("Cancer", new MRG32k3a());
 		randomStreams.put("Death", new MRG32k3a());
 		randomStreams.put("CancerDeath", new MRG32k3a());
+		randomStreams.put("Attribute", new MRG32k3a());
 
 		// Create list containing maps of randomstreams for each worker
 		List<Map<String, RandomStreamBase>> streamList = Utils.inflateStreams(randomStreams,
