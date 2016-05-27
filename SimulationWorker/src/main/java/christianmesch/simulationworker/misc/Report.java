@@ -113,8 +113,13 @@ public class Report implements Serializable {
 	 * @param other Report to be added to this report
 	 */
 	private void addAll(Report other) {
-		other.events.forEach((EventKey key, Integer i) -> addEvent(key, i));
-		other.personTimes.forEach((PTKey key, Double d) -> addPersonTime(key, d));
+		for(Entry<EventKey, Integer> entry : other.events.entrySet()) {
+			addEvent(entry.getKey(), entry.getValue());
+		}
+		
+		for(Entry<PTKey, Double> entry : other.personTimes.entrySet()) {
+			addPersonTime(entry.getKey(), entry.getValue());
+		}	
 	}
 	
 	/**
@@ -171,7 +176,9 @@ public class Report implements Serializable {
 	public void printEvents() {
 		
 		SortedMap<EventKey, Integer> tmp = new TreeMap<>(events);
-		tmp.forEach((EventKey key, Integer i) -> System.out.println(key + " = " + i));
+		for(Entry<EventKey, Integer> entry : tmp.entrySet()) {
+			System.out.println(entry.getKey() + " = " + entry.getValue());
+		}
 		
 		/*
 		events.forEach((EventKey key, Integer i) -> System.out.println(key + " = " + i));
@@ -192,7 +199,9 @@ public class Report implements Serializable {
 	public void printPersonTimes() {
 		
 		SortedMap<PTKey, Double> tmp = new TreeMap<>(personTimes);
-		tmp.forEach((PTKey key, Double d) -> System.out.println(key + " = " + d));
+		for(Entry<PTKey, Double> entry : tmp.entrySet()) {
+			System.out.println(entry.getKey() + " = " + entry.getValue());
+		}
 		
 		/*
 		personTimes.forEach((PTKey key, Double d) -> System.out.println(key + " = " + d));
