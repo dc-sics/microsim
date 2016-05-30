@@ -6,15 +6,10 @@
 package christianmesch.sparkmaster;
 
 import christianmesch.sparkmaster.functions.CollectFunction;
-import christianmesch.sparkmaster.functions.FilterEventsFunction;
-import christianmesch.sparkmaster.functions.FilterPTsFunction;
 import christianmesch.sparkmaster.functions.SimulationFunction;
 import christianmesch.sparkmaster.misc.Utils;
-import christianmesch.simulationworker.misc.EventKeyFilter;
-import christianmesch.simulationworker.misc.PTKeyFilter;
 import christianmesch.simulationworker.misc.Report;
-import christianmesch.simulationworker.models.States;
-import christianmesch.sparkmaster.misc.ChartCreator;
+import christianmesch.sparkmaster.misc.StopWatch;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,14 +48,18 @@ public class SparkMaster {
 		int NUM_WORKERS = 10;
 		int REPLICATIONS_PER_WORKER = 1000000;
 		
+		StopWatch stopWatch = new StopWatch();
+		
 		if(args.length == 2) {
 			NUM_WORKERS = Integer.valueOf(args[0]);
 			REPLICATIONS_PER_WORKER = Integer.valueOf(args[1]);
 		}
 
+		stopWatch.start();
+		
 		SparkConf config = new SparkConf().setAppName("Testing");
 		JavaSparkContext context = new JavaSparkContext(config);
-
+		
 		// Add Streams to a map with the name you want to use to access them as key
 		Map<String, RandomStreamBase> randomStreams = new HashMap<>();
 		randomStreams.put("Cancer", new MRG32k3a());
@@ -104,7 +103,7 @@ public class SparkMaster {
 		filteredPTs.printPersonTimes();
 		*/
 
-		System.out.println("Life expectancy = " + allReports.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER));
+		System.err.println("Life expectancy = " + allReports.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER));
 		
 		// ChartCreator chart = new ChartCreator(allReports)
 		// 		.setTitle("Title")
@@ -122,6 +121,9 @@ public class SparkMaster {
 		// allReports.report();
 
 		context.stop();
+		
+		stopWatch.stop();
+		System.err.println("Time: " + stopWatch.getElapsedTime());
 	}
 
 }

@@ -60,7 +60,9 @@ public class Report implements Serializable {
 	public void logEvent(Person person, String event, double age) {
 		EventKey key = new EventKey(person.copyStates(), event, Math.floor(age));
 		
-		events.put(key, events.getOrDefault(key, 0) + 1);
+		//events.put(key, events.getOrDefault(key, 0) + 1);
+		Integer value = events.containsKey(key) ? events.get(key) + 1 : 1;
+		events.put(key, value);
 	}
 	
 	/**
@@ -70,7 +72,9 @@ public class Report implements Serializable {
 	 * @param value Value which should be added to the key
 	 */
 	private void addEvent(EventKey key, Integer value) {
-		events.put(key, events.getOrDefault(key, 0) + value);
+		//events.put(key, events.getOrDefault(key, 0) + value);
+		Integer val = events.containsKey(key) ? events.get(key) + value : value;
+		events.put(key, val);
 	}
 	
 	/**
@@ -89,7 +93,8 @@ public class Report implements Serializable {
 		// Go from last logging time to now and add person times
 		for(double t = previous; t <= now; t++) {
 			PTKey key = new PTKey(states, t);
-			double value = personTimes.getOrDefault(key, 0.0)
+			//double value = personTimes.getOrDefault(key, 0.0)
+			double value = (personTimes.containsKey(key) ? personTimes.get(key) : 0.0)
 					+ Math.min(t + 1.0, age) - Math.max(t, person.getPreviousTime());
 			
 			personTimes.put(key, value);
@@ -103,9 +108,10 @@ public class Report implements Serializable {
 	 * @param value Value which should be added to the key
 	 */
 	private void addPersonTime(PTKey key, double value) {
-		double newValue = personTimes.getOrDefault(key, 0.0) + value;
+		//double val = personTimes.getOrDefault(key, 0.0) + value;
+		double val = personTimes.containsKey(key) ? personTimes.get(key) + value : value;
 		
-		personTimes.put(key, newValue);
+		personTimes.put(key, val);
 	}
 
 	/**

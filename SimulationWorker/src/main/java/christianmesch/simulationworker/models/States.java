@@ -120,13 +120,13 @@ public class States implements Serializable, Comparable<States> {
 		return this.diagnosis.equals(other.diagnosis) &&
 				this.healthState.equals(other.healthState);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		int hash = 3;
-		hash = 97 * hash + Objects.hashCode(this.healthState);
-		hash = 97 * hash + Objects.hashCode(this.diagnosis);
-		hash = 97 * hash + Objects.hashCode(this.attribute);
+		hash = 79 * hash + Objects.hashCode(this.healthState);
+		hash = 79 * hash + Objects.hashCode(this.diagnosis);
+		hash = 79 * hash + this.attribute;
 		return hash;
 	}
 

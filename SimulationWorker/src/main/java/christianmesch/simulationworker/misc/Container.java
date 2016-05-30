@@ -18,12 +18,14 @@ public class Container {
 	private final Report report;
 	private final Map<String, RandomStreamBase> randomStreams;
 	private Person person;
+	
+	private final int MAX_ATTRIBUTE = 100;
 
 	public Container(Report report, Map<String, RandomStreamBase> randomStreams, Person person) {
 		this.report = report;
 		this.randomStreams = randomStreams;
 		this.person = person;
-		person.getStates().setAttribute(randomStreams.get("Attribute").nextInt(1,100000));
+		person.getStates().setAttribute(randomStreams.get("Attribute").nextInt(1, MAX_ATTRIBUTE));
 	}
 
 	public Report getReport() {
@@ -43,7 +45,7 @@ public class Container {
 	 */
 	public void resetPerson() {
 		person = person.reset();
-		person.getStates().setAttribute(randomStreams.get("Attribute").nextInt(1,100000));
+		person.getStates().setAttribute(randomStreams.get("Attribute").nextInt(1, MAX_ATTRIBUTE));
 	}
 	
 	public void resetNextSubstreams() {
