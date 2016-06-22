@@ -58,7 +58,7 @@ public class Utils {
 		return commandList;
 	}
 	
-	public static List<Map<String, RandomStreamBase>> inflateStreams(Map<String, RandomStreamBase> randomStreams, final int NUM_WORKERS, final int REPLICATIONS_PER_WORKER) throws Exception {
+	public static List<Map<String, RandomStreamBase>> inflateStreams(Map<String, RandomStreamBase> randomStreams, final int NUM_WORKERS) throws Exception {
 		List<Map<String, RandomStreamBase>> streamList = new ArrayList<>(NUM_WORKERS);
 		
 		for(int i = 0; i < NUM_WORKERS; i++) {

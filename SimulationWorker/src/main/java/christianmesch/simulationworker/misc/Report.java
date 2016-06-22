@@ -118,7 +118,7 @@ public class Report implements Serializable {
 	 * Add all events and person times from other to this report
 	 * @param other Report to be added to this report
 	 */
-	private void addAll(Report other) {
+	public void addAll(Report other) {
 		for(Entry<EventKey, Integer> entry : other.events.entrySet()) {
 			addEvent(entry.getKey(), entry.getValue());
 		}

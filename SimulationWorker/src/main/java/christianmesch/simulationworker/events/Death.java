@@ -21,6 +21,9 @@ public class Death extends MyEvent {
 
 	@Override
 	public void execute() {
+		for(int i = 0; i < 1000; i++) {
+			container.getRandomStreams().get("Death").nextDouble();
+		}
 		
 		sim.stop();
 	}

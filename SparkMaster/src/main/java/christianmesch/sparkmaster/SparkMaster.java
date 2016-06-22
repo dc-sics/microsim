@@ -69,7 +69,7 @@ public class SparkMaster {
 
 		// Create list containing maps of randomstreams for each worker
 		List<Map<String, RandomStreamBase>> streamList = Utils.inflateStreams(randomStreams,
-				NUM_WORKERS, REPLICATIONS_PER_WORKER);
+				NUM_WORKERS);
 		
 		
 		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(streamList);
@@ -103,7 +103,7 @@ public class SparkMaster {
 		filteredPTs.printPersonTimes();
 		*/
 
-		System.err.println("Life expectancy = " + allReports.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER));
+		System.out.println("Life expectancy = " + allReports.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER));
 		
 		// ChartCreator chart = new ChartCreator(allReports)
 		// 		.setTitle("Title")
@@ -123,7 +123,7 @@ public class SparkMaster {
 		context.stop();
 		
 		stopWatch.stop();
-		System.err.println("Time: " + stopWatch.getElapsedTime());
+		System.out.println("Time: " + stopWatch.getElapsedTime());
 	}
 
 }

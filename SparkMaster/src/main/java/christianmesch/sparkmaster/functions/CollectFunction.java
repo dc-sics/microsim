@@ -17,7 +17,9 @@ public class CollectFunction implements Function2<Report, Report, Report> {
 
 	@Override
 	public Report call(Report t1, Report t2) throws Exception {
-		return t1.concat(t2);
+		t1.addAll(t2);
+		
+		return t1;
 	}
 	
 }
