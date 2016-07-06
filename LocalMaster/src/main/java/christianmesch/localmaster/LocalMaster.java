@@ -37,6 +37,8 @@ public class LocalMaster {
 			REPLICATIONS = Integer.valueOf(args[1]);
 		}
 
+		int REPLICATIONS_PER_THREAD = REPLICATIONS / NUM_THREADS;
+		
 		stopWatch.start();
 
 		// simulation workers
@@ -50,7 +52,7 @@ public class LocalMaster {
 			randomStreams.put("CancerDeath", new MRG32k3a());
 			randomStreams.put("Attribute", new MRG32k3a());
 			
-			simulations[i] = new SimulationWorkerRunnable(randomStreams, REPLICATIONS);
+			simulations[i] = new SimulationWorkerRunnable(randomStreams, REPLICATIONS_PER_THREAD);
 		}
 
 		ExecutorService es = Executors.newFixedThreadPool(NUM_THREADS);
@@ -59,7 +61,6 @@ public class LocalMaster {
 
 		for(int i = 0; i < NUM_THREADS; i++) {
 			final int j = i;
-			final int repl = REPLICATIONS;
 
 			es.execute(new Runnable(){
 				@Override
@@ -83,7 +84,7 @@ public class LocalMaster {
 		
 		System.out.println("Number of events: " + report.getEvents().size());
 		
-		System.out.println("Life expectancy: " + report.lifeExpectancy(REPLICATIONS * NUM_THREADS));
+		System.out.println("Life expectancy: " + report.lifeExpectancy(REPLICATIONS));
 
 		stopWatch.stop();
 		System.out.println("Time: " + stopWatch.getElapsedTime());

@@ -43,21 +43,23 @@ public class SparkMaster {
 	 * @throws java.lang.Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		// Constants for number of workers and replications per worker
-		// NUM_WORKERS * REPLICATIONS_PER_WORKER = Full # of replications
+		// Constants for number of workers and full replications
+		// NUM_WORKERS * REPLICATIONS_PER_WORKER = REPLICATIONS
 		int NUM_WORKERS = 10;
-		int REPLICATIONS_PER_WORKER = 1000000;
+		int REPLICATIONS = 1000000;
 		
 		StopWatch stopWatch = new StopWatch();
 		
 		if(args.length == 2) {
 			NUM_WORKERS = Integer.valueOf(args[0]);
-			REPLICATIONS_PER_WORKER = Integer.valueOf(args[1]);
+			REPLICATIONS = Integer.valueOf(args[1]);
 		}
 
+		int REPLICATIONS_PER_WORKER = REPLICATIONS / NUM_WORKERS;
+		
 		stopWatch.start();
 		
-		SparkConf config = new SparkConf().setAppName("Testing");
+		SparkConf config = new SparkConf().setAppName("SparkMaster");
 		JavaSparkContext context = new JavaSparkContext(config);
 		
 		// Add Streams to a map with the name you want to use to access them as key
@@ -103,7 +105,7 @@ public class SparkMaster {
 		filteredPTs.printPersonTimes();
 		*/
 
-		System.out.println("Life expectancy = " + allReports.lifeExpectancy(NUM_WORKERS * REPLICATIONS_PER_WORKER));
+		System.out.println("Life expectancy = " + allReports.lifeExpectancy(REPLICATIONS));
 		
 		// ChartCreator chart = new ChartCreator(allReports)
 		// 		.setTitle("Title")
