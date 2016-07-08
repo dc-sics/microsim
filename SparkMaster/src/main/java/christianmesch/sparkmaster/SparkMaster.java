@@ -74,7 +74,7 @@ public class SparkMaster {
 				NUM_WORKERS);
 		
 		
-		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(streamList);
+		JavaRDD<Map<String, RandomStreamBase>> dataSet = context.parallelize(streamList, streamList.size());
 		
 		// Run the simulations and cache the data. 
 		// This will be the complete data set from the simulations distributed on the cluster
