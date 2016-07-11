@@ -42,7 +42,7 @@ public class LocalMaster {
 		stopWatch.start();
 
 		// simulation workers
-		SimulationWorkerRunnable[] simulations = new SimulationWorkerRunnable[NUM_THREADS];
+		final SimulationWorkerRunnable[] simulations = new SimulationWorkerRunnable[NUM_THREADS];
 
 		for(int i = 0; i < NUM_THREADS; i++) {
 			// Random streams
